@@ -86,3 +86,4 @@ After the `model_data.h` is updated, re-upload the `esp32gate` sketch to your bo
 ## Troubleshooting
 - **Import Error (tensorflow)**: Ensure you are using the virtual environment (`source tiny-env/bin/activate`).
 - **Camera Error**: Check the URL and credentials in `gate.py` and `label_and_capture.sh`.
+# esp32gate
