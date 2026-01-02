@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.env
+venv/
+env/
+.venv/
+tiny-env/
+venv_new/
+.DS_Store
+
+# Logs
+*.log
+nohup.out
+
+# Data & Models
+# Keep the structure but ignore large data/models if desired.
+# For now, we ignore the training data images.
+server/data/
+server/gate_detector_tiny.h5
+server/gate_detector_tiny.keras
+# We might want to commit the tflite and header as 'releases', but usually build artifacts are ignored.
+# However, for this embedded project, keeping the working tflite/header might be useful.
+# Let's ignore the intermediate keras/h5 but keep tflite/header.
+
+# ESP32
+.vscode/
+build/
+*.elf
+*.bin
+*.map
