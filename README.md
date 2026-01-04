@@ -18,6 +18,11 @@ git clone https://github.com/rightedges/esp32gate.git
 cd esp32gate
 ```
 
+To update the repository to the latest version, run:
+```bash
+git pull
+```
+
 ### 1. Hardware
 - **Board**: **Seeed Studio XIAO ESP32S3 (Sense)** (Highly Recommended).
     - **Requirement**: Must have **PSRAM** (e.g., 8MB) enabled to run the TinyCNN model effectively.
