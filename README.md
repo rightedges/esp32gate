@@ -33,9 +33,9 @@ Navigate to the `server/` directory and set up a virtual environment.
 cd server
 python3 -m venv tiny-env
 source tiny-env/bin/activate
-pip install tensorflow tflite-runtime flask pillow numpy
+pip install -r requirements.txt
 ```
-*(Note: You can use `requirements.txt` if available, or just install the core deps above).*
+*(Alternatively, you can manually install: `pip install tensorflow tflite-runtime flask pillow numpy`)*
 
 ### 3. ESP32 Firmware
 

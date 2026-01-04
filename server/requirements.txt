@@ -1,0 +1,5 @@
+tensorflow
+tflite-runtime
+flask
+pillow
+numpy
