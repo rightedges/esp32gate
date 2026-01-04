@@ -1,6 +1,6 @@
 # ESP32 Gate Detector with TinyML
 
-This project implements a smart gate detector using an ESP32S3 and a PC-based server for training and verification. It uses a TinyCNN model to classify the gate as **OPEN** or **CLOSED**.
+This project implements a smart gate detector using an ESP32S3 and a PC-based server for training and verification. It uses a TinyCNN model to classify the gate as **OPEN** or **CLOSED**. The system is also integrated with HomeKit (using HomeSpan library) for easy monitoring and status checks.
 
 ## Project Structure
 
@@ -9,6 +9,14 @@ This project implements a smart gate detector using an ESP32S3 and a PC-based se
 - **`tester/`**: (Optional) Sandbox for testing sensor/camera components.
 
 ## Setup Guide
+
+### 0. Clone the Repository
+Start by cloning the repository to your local machine:
+
+```bash
+git clone https://github.com/rightedges/esp32gate.git
+cd esp32gate
+```
 
 ### 1. Hardware
 - **Board**: **Seeed Studio XIAO ESP32S3 (Sense)** (Highly Recommended).
@@ -53,6 +61,18 @@ The `gate.py` script runs a web server that exposes the gate status.
 cd server
 ./tiny-env/bin/python3 gate.py
 ```
+
+### Auto-Start Server on Reboot
+We provide a startup script `server/start_gate_server.sh` that can be used to automatically start the server on boot.
+
+To set this up, add a LINE to your user's `crontab`:
+
+1. Run `crontab -e`
+2. Add the following line:
+```
+@reboot /path/to/esp32gate/server/start_gate_server.sh >> /path/to/esp32gate/server/cron_log.txt 2>&1
+```
+*(Replace `/path/to/esp32gate` with the actual absolute path to your project directory).*
 
 ## Retraining the Model
 
