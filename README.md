@@ -92,6 +92,16 @@ cd server
 ```
 *Follow the prompts. You can choose to "Open" or "Closed".*
 
+**Advanced Usage:**
+You can also pass arguments to skip prompts:
+```bash
+# Capture 'open' image and skip retraining prompt
+./label_and_capture.sh --label open --no-training
+
+# Capture 'low_confidence' image (creates new directory if needed)
+./label_and_capture.sh --label low_confidence
+```
+
 ### Step 2: Retrain & Deploy
 The script above will ask if you want to retrain immediately. If you say **Yes**, it will:
 1. Train a new TinyCNN model.

@@ -9,15 +9,21 @@ TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 # === Parse argument ===
 LABEL=""
 
+NO_TRAINING=false
+
 while [[ $# -gt 0 ]]; do
     case $1 in
         --label)
             LABEL="$2"
             shift 2
             ;;
+        --no-training)
+            NO_TRAINING=true
+            shift 1
+            ;;
         *)
             echo "❌ Unknown argument: $1"
-            echo "Usage: $0 [--label open|closed]"
+            echo "Usage: $0 [--label open|closed] [--no-training]"
             exit 1
             ;;
     esac
@@ -52,6 +58,12 @@ else
 fi
 
 # === Optional Retraining ===
+if [[ "$NO_TRAINING" == "true" ]]; then
+    echo ""
+    echo "Skipping retraining (--no-training flag used)."
+    exit 0
+fi
+
 echo ""
 echo "Do you want to retrain the model and deploy to ESP32 now? (y/N)"
 read -r RETRAIN_CHOICE
