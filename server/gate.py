@@ -18,6 +18,9 @@ import urllib.request
 import base64
 import logging
 from datetime import datetime
+import os
+import time
+import subprocess
 
 # === Setup Logging ===
 logging.basicConfig(
@@ -102,8 +105,28 @@ def get_camera_image():
             img_data = response.read()
         return Image.open(io.BytesIO(img_data))
     except Exception as e:
-        print(f"Error fetching image from camera: {e}")
-        return None
+        msg = f"Error fetching image from camera: {e}"
+        print(msg)
+        logging.error(msg)
+        
+        # Fallback to CURL if Python network is blocked (e.g., VPN issues)
+        print("Attempting fallback to curl...")
+        try:
+            # Construct curl command
+            cmd = [
+                "curl", "-s",
+                "-u", f"{gate_user}:{gate_password}",
+                gate_url,
+                "--connect-timeout", "5"
+            ]
+            result = subprocess.run(cmd, capture_output=True, check=True)
+            return Image.open(io.BytesIO(result.stdout))
+        except Exception as curl_e:
+            curl_msg = f"Curl fallback failed: {curl_e}"
+            print(curl_msg)
+            logging.error(curl_msg)
+            return None
+
 
 def predict_gate_status(image):
     """Predicts the gate status (open/closed) using TFLite model."""
@@ -134,6 +157,62 @@ def predict_gate_status(image):
     except Exception as e:
         print(f"Prediction error: {e}")
         return "error"
+
+# === Image Saving Helper ===
+def save_image(image, label="unknown"):
+    """Saves the image to the data/train/<label> directory."""
+    try:
+        if image is None:
+            return False, "No image to save"
+        
+        # Create directory if it doesn't exist
+        save_dir = os.path.join("data", "train", label)
+        os.makedirs(save_dir, exist_ok=True)
+        
+        # Generate filename with timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"{timestamp}.jpg"
+        filepath = os.path.join(save_dir, filename)
+        
+        image.save(filepath)
+        logging.info(f"Saved image to {filepath}")
+        return True, filepath
+    except Exception as e:
+        err_msg = f"Error saving image: {e}"
+        logging.error(err_msg)
+        print(err_msg)
+        return False, err_msg
+
+# === Routes ===
+
+@app.route("/capture", methods=['GET'])
+def capture_image_route():
+    """
+    API endpoint to capture and save an image with a specific label.
+    Usage: /capture?status=open|closed|low_confidence
+    """
+    status = request.args.get('status', 'unknown')
+    
+    # Clean status to be safe for filesystem
+    status = "".join([c for c in status if c.isalnum() or c in ('_', '-')])
+    if not status:
+        status = "unknown"
+
+    image = get_camera_image()
+    
+    if image is None:
+         return Response(json.dumps({"status": "error", "message": "Failed to fetch image from camera"}),
+                        status=500, mimetype='application/json')
+                        
+    success, result = save_image(image, status)
+    
+    if success:
+        return Response(json.dumps({"status": "success", "file": result, "label": status}),
+                        mimetype='application/json')
+    else:
+        return Response(json.dumps({"status": "error", "message": result}),
+                        status=500, mimetype='application/json')
+
 
 @app.route("/", methods=['GET'])
 def get_gate_status():

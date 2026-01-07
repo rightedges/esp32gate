@@ -29,6 +29,7 @@ extern uint8_t *roi_buffer;
 extern const char *camera_url;
 extern const char *camera_user;
 extern const char *camera_pass;
+extern const char *server_capture_url; // New capture API
 
 // Timing and Status
 extern unsigned long CHECKINTERVAL;
@@ -247,6 +248,9 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {
                       float prob_closed = output[0];
                       float prob_open = output[1];
 
+                      float max_prob =
+                          (prob_open > prob_closed) ? prob_open : prob_closed;
+
                       gateStatus =
                           (prob_open > prob_closed) ? "open" : "closed";
 
@@ -254,6 +258,13 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {
                              "Avg: %ld",
                              global_w, global_h, gateStatus.c_str(),
                              prob_closed, prob_open, totalSum / totalPixels);
+
+                      if (max_prob < 0.65) {
+                        WEBLOG("TinyML: Low confidence (%.2f). Capturing "
+                               "sample...",
+                               max_prob);
+                        captureSample("low_confidence");
+                      }
                     }
                   } else {
                     WEBLOG("TinyML: Inference Input Buf Missing");
@@ -281,6 +292,27 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {
     } else {
       WEBLOG("TinyML: GET Fail (%d). WiFi RSSI: %ld, IP: %s", httpCode,
              WiFi.RSSI(), WiFi.localIP().toString().c_str());
+    }
+    http.end();
+  }
+
+  void captureSample(String label) {
+    if (!server_capture_url)
+      return;
+
+    HTTPClient http;
+    String url = String(server_capture_url) + "?status=" + label;
+
+    WEBLOG("Capture: Triggering %s", url.c_str());
+
+    http.begin(url);
+    int httpCode = http.GET();
+
+    if (httpCode > 0) {
+      WEBLOG("Capture: Success (Code: %d)", httpCode);
+    } else {
+      WEBLOG("Capture: Failed (Error: %s)",
+             http.errorToString(httpCode).c_str());
     }
     http.end();
   }

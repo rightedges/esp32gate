@@ -1,12 +1,10 @@
 #!/bin/bash
 
 # === Config ===
-BASE_DIR="./data/train"
-GATE_URL="http://192.168.50.82/ISAPI/ContentMgmt/StreamingProxy/channels/801/picture?cmd=refresh"
-GATE_USER="admin"
-GATE_PASSWORD="pccw1234"
+# We now use the local API endpoint which handles saving
+API_URL="http://localhost:5001/capture"
+
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-FILENAME="${TIMESTAMP}.jpg"
 
 # === Parse argument ===
 LABEL=""
@@ -31,24 +29,25 @@ if [[ -z "$LABEL" ]]; then
 fi
 
 # === Validate label ===
-if [[ "$LABEL" != "open" && "$LABEL" != "closed" ]]; then
-    echo "Invalid label. Please use 'open' or 'closed'."
+# Allow 'low_confidence' or other labels if needed, but primarily open/closed
+if [[ -z "$LABEL" ]]; then
+    echo "Label cannot be empty."
     exit 1
 fi
 
-SAVE_DIR="$BASE_DIR/$LABEL"
+echo "Capturing image for label: $LABEL"
 
-# === Ensure directory exists ===
-mkdir -p "$SAVE_DIR"
+# === Call API ===
+response=$(curl -s "$API_URL?status=$LABEL")
 
-# === Capture and save ===
-curl -u "$GATE_USER:$GATE_PASSWORD" -s "$GATE_URL" -o "$SAVE_DIR/$FILENAME"
-
-# === Result ===
-if [ -f "$SAVE_DIR/$FILENAME" ]; then
-    echo "Image saved to: $SAVE_DIR/$FILENAME"
+# === Check result ===
+# Simple check if "success" is in the response
+if [[ "$response" == *"success"* ]]; then
+    echo "✅ Image captured successfully."
+    echo "Server response: $response"
 else
-    echo "Failed to capture or save the image."
+    echo "❌ Failed to capture image."
+    echo "Server response: $response"
     exit 1
 fi
 

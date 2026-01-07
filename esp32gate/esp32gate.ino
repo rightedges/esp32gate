@@ -46,6 +46,10 @@ const char *camera_url = "http://192.168.50.82/ISAPI/ContentMgmt/"
 const char *camera_user = "admin";
 const char *camera_pass = "pccw1234";
 
+// === Server Capture API ===
+// REPLACE WITH YOUR SERVER IP!
+const char *server_capture_url = "http://192.168.50.231:5001/capture";
+
 void setup() {
   // Serial must be absolutely first
   Serial.begin(115200);
