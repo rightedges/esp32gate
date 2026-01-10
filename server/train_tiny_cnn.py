@@ -80,8 +80,23 @@ model.compile(optimizer='adam',
 
 print("Starting training...")
 # Simple training without generator for faster convergence on small data
-model.fit(X, y, epochs=100, validation_split=0.2)
+history = model.fit(X, y, epochs=100, validation_split=0.2)
 
 # Export model in Keras format
 model.save("gate_detector_tiny.keras")
 print("Tiny CNN model saved as gate_detector_tiny.keras")
+
+# Allow history to be accessed
+acc = history.history['accuracy'][-1]
+val_acc = history.history['val_accuracy'][-1]
+loss = history.history['loss'][-1]
+val_loss = history.history['val_loss'][-1]
+
+print("\n" + "="*30)
+print("     TRAINING RESULTS")
+print("="*30)
+print(f"Final Accuracy:      {acc*100:.2f}%")
+print(f"Final Val Accuracy:  {val_acc*100:.2f}%")
+print(f"Final Loss:          {loss:.4f}")
+print(f"Final Val Loss:      {val_loss:.4f}")
+print("="*30 + "\n")
